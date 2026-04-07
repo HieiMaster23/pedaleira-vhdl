@@ -1,0 +1,95 @@
+# =============================================================================
+# pedaleira.qsf
+# Quartus II Settings File — Pedaleira de Guitarra com Overdrive
+# Device: EP4CE6E22C8 (Cyclone IV E, 144 pinos, Speed Grade 8)
+# Ferramenta: Quartus 13.0 SP1
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# Configurações gerais do projeto
+# ---------------------------------------------------------------------------
+set_global_assignment -name FAMILY "Cyclone IV E"
+set_global_assignment -name DEVICE EP4CE6E22C8
+set_global_assignment -name TOP_LEVEL_ENTITY top
+set_global_assignment -name ORIGINAL_QUARTUS_VERSION "13.0 SP1"
+set_global_assignment -name PROJECT_CREATION_TIME_DATE "00:00:00 JANUARY 01, 2024"
+set_global_assignment -name LAST_QUARTUS_VERSION "13.0 SP1"
+
+# ---------------------------------------------------------------------------
+# Arquivos VHDL do projeto
+# ---------------------------------------------------------------------------
+set_global_assignment -name VHDL_FILE ../src/top.vhd
+set_global_assignment -name VHDL_FILE ../src/pll_audio.vhd
+set_global_assignment -name VHDL_FILE ../src/i2c_master.vhd
+set_global_assignment -name VHDL_FILE ../src/codec_config.vhd
+set_global_assignment -name VHDL_FILE ../src/i2s_receiver.vhd
+set_global_assignment -name VHDL_FILE ../src/i2s_transmitter.vhd
+set_global_assignment -name VHDL_FILE ../src/overdrive.vhd
+
+# ---------------------------------------------------------------------------
+# Configurações de compilação
+# ---------------------------------------------------------------------------
+set_global_assignment -name STRATIX_DEVICE_IO_STANDARD "3.3-V LVTTL"
+set_global_assignment -name ERROR_CHECK_FREQUENCY_DIVISOR 1
+set_global_assignment -name NOMINAL_CORE_SUPPLY_VOLTAGE 1.2V
+
+# ---------------------------------------------------------------------------
+# Pin Assignments
+# Ajuste conforme a pinagem da sua placa.
+# Os nomes abaixo são baseados em uma placa genérica com EP4CE6E22C8.
+# Para placas como DE0-Nano consulte o manual e ajuste os pinos.
+# ---------------------------------------------------------------------------
+
+# Clock principal 50 MHz
+set_location_assignment PIN_23 -to clk_50mhz
+
+# Reset (KEY0, ativo baixo)
+set_location_assignment PIN_25 -to reset_n
+
+# Switches de ganho SW[2:0]
+set_location_assignment PIN_88 -to gain_sw[0]
+set_location_assignment PIN_89 -to gain_sw[1]
+set_location_assignment PIN_90 -to gain_sw[2]
+
+# LEDs de status
+set_location_assignment PIN_84 -to led_config_done
+set_location_assignment PIN_85 -to led_clipping
+
+# WM8731 — I2S
+set_location_assignment PIN_65 -to aud_mclk
+set_location_assignment PIN_66 -to aud_bclk
+set_location_assignment PIN_67 -to aud_daclrck
+set_location_assignment PIN_68 -to aud_dacdat
+set_location_assignment PIN_69 -to aud_adclrck
+set_location_assignment PIN_70 -to aud_adcdat
+
+# WM8731 — I2C
+set_location_assignment PIN_72 -to i2c_sclk
+set_location_assignment PIN_73 -to i2c_sdat
+
+# ---------------------------------------------------------------------------
+# Configurações de I/O
+# ---------------------------------------------------------------------------
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to clk_50mhz
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to reset_n
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to gain_sw[0]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to gain_sw[1]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to gain_sw[2]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to led_config_done
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to led_clipping
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to aud_mclk
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to aud_bclk
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to aud_daclrck
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to aud_dacdat
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to aud_adclrck
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to aud_adcdat
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to i2c_sclk
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to i2c_sdat
+
+# I2C SDA: open-drain — o driver VHDL usa tristate, configurar como bidirecional
+set_instance_assignment -name CURRENT_STRENGTH_NEW "MINIMUM CURRENT" -to i2c_sdat
+
+# ---------------------------------------------------------------------------
+# Restrições de timing (SDC inline)
+# ---------------------------------------------------------------------------
+set_global_assignment -name SDC_FILE pedaleira.sdc

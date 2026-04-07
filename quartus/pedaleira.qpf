@@ -1,0 +1,6 @@
+QUARTUS_VERSION = "13.0"
+DATE = "2024:01:01 00:00:00"
+
+# Revisions
+
+PROJECT_REVISION = "pedaleira"
