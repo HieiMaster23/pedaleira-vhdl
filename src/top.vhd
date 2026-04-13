@@ -144,8 +144,8 @@ architecture rtl of top is
     signal mclk         : std_logic;
     signal pll_locked   : std_logic;
 
-    -- Reset síncrono (aguarda PLL travar)
-    signal reset_sync   : std_logic;
+    -- Reset ativo-baixo do sistema: '1' quando reset_n='1' e PLL travado
+    signal sys_reset_n  : std_logic;
 
     -- I2C
     signal i2c_start    : std_logic;
@@ -173,9 +173,9 @@ architecture rtl of top is
 begin
 
     -- =========================================================================
-    -- Reset: ativo se reset_n = '0' ou PLL não travado
+    -- Reset: '1' (liberado) somente quando botão não pressionado e PLL travado
     -- =========================================================================
-    reset_sync <= not (reset_n and pll_locked);
+    sys_reset_n <= reset_n and pll_locked;
 
     -- =========================================================================
     -- PLL: 50 MHz → ~12.288 MHz (MCLK do WM8731)
@@ -199,7 +199,7 @@ begin
         )
         port map (
             clk     => clk_50mhz,
-            reset_n => not reset_sync,
+            reset_n => sys_reset_n,
             start   => i2c_start,
             addr    => i2c_addr_s,
             data    => i2c_data_s,
@@ -218,7 +218,7 @@ begin
         )
         port map (
             clk         => clk_50mhz,
-            reset_n     => not reset_sync,
+            reset_n     => sys_reset_n,
             i2c_start   => i2c_start,
             i2c_addr    => i2c_addr_s,
             i2c_data    => i2c_data_s,
@@ -237,7 +237,7 @@ begin
     u_rx : i2s_receiver
         port map (
             clk        => clk_50mhz,
-            reset_n    => not reset_sync,
+            reset_n    => sys_reset_n,
             bclk       => bclk_s,
             lrck       => lrck_s,
             adcdat     => aud_adcdat,
@@ -252,7 +252,7 @@ begin
     u_od : overdrive
         port map (
             clk        => clk_50mhz,
-            reset_n    => not reset_sync,
+            reset_n    => sys_reset_n,
             gain_sw    => gain_sw,
             left_in    => adc_left,
             right_in   => adc_right,
@@ -271,7 +271,7 @@ begin
     u_tx : i2s_transmitter
         port map (
             clk        => clk_50mhz,
-            reset_n    => not reset_sync,
+            reset_n    => sys_reset_n,
             mclk       => mclk,
             left_data  => od_left,
             right_data => od_right,
