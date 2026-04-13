@@ -319,35 +319,45 @@ begin
 
         -- =====================================================================
         -- VERIFICAÇÃO DE LATÊNCIA
+        -- O pipeline tem 2 estágios registrados (apply_gain → soft_clip),
+        -- mas ambos são capturados em bordas consecutivas, resultando em
+        -- 1 período de clock de latência:
+        --
+        --   T1 (borda onde data_valid='1' é capturado):
+        --        Stage 1 registra: s1_valid='1', s1_left/right válidos
+        --   T2 (borda seguinte):
+        --        Stage 2 registra: s2_valid='1' → valid_out='1'  ← saída aqui
+        --   T3: s2_valid volta a '0' (pulso de 1 ciclo)
         -- =====================================================================
-        report "--- Verificacao de latencia (2 ciclos) ---";
+        report "--- Verificacao de latencia (1 periodo de clock) ---";
 
-        -- Pulsa data_valid e conta ciclos até valid_out
         gain_sw    <= "000";
         left_in    <= x"001000";
         right_in   <= x"001000";
         data_valid <= '1';
-        wait until rising_edge(clk);
+        wait until rising_edge(clk);   -- T1: DUT captura data_valid='1'
         data_valid <= '0';
 
-        -- Ciclo 1: deve ser '0'
-        wait until rising_edge(clk);
+        -- T1 + 1 ns: Stage 2 ainda não atualizou → valid_out deve ser '0'
         wait for 1 ns;
-        if valid_out = '1' then
-            report "[FAIL] Latencia: valid_out subiu no ciclo 1 (esperado ciclo 2)" severity error;
-        else
+        if valid_out = '0' then
             tests_passed := tests_passed + 1;
+            report "[PASS] Latencia: valid_out='0' no proprio ciclo de captura";
+        else
+            report "[FAIL] Latencia: valid_out='1' prematuramente no ciclo de captura"
+                severity error;
         end if;
         tests_run := tests_run + 1;
 
-        -- Ciclo 2: deve ser '1'
+        -- T2 (1 periodo de clock apos data_valid): Stage 2 atualiza → valid_out='1'
         wait until rising_edge(clk);
         wait for 1 ns;
         if valid_out = '1' then
-            report "[PASS] Latencia: valid_out correto no ciclo 2";
             tests_passed := tests_passed + 1;
+            report "[PASS] Latencia: valid_out='1' em T+1 ciclo (correto)";
         else
-            report "[FAIL] Latencia: valid_out nao subiu no ciclo 2" severity error;
+            report "[FAIL] Latencia: valid_out nao subiu 1 ciclo apos data_valid"
+                severity error;
         end if;
         tests_run := tests_run + 1;
 

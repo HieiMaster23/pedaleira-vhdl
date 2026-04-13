@@ -28,7 +28,7 @@
 --   Esta aproximação produz overdrive warm (semelhante a tube screamer) sem
 --   precisar de multiplicador ou divisor, usando apenas adições e shifts.
 --
--- Latência: 2 ciclos de clock do sistema.
+-- Latência: 1 período de clock (2 estágios de pipeline em bordas consecutivas).
 -- Bits: entrada/saída 24 bits, aritmética interna 26 bits.
 -- =============================================================================
 
