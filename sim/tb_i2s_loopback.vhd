@@ -94,6 +94,42 @@ architecture bench of tb_i2s_loopback is
     shared variable fail_cnt : integer := 0;
 
     -- -------------------------------------------------------------------------
+    -- Função auxiliar: converte std_logic_vector para string hexadecimal.
+    -- Compatível com VHDL-93 (substitui to_hstring do VHDL-2008).
+    -- -------------------------------------------------------------------------
+    function slv_to_hex(slv : std_logic_vector) return string is
+        constant NIBBLES : integer := (slv'length + 3) / 4;
+        variable padded  : std_logic_vector(NIBBLES * 4 - 1 downto 0) := (others => '0');
+        variable result  : string(1 to NIBBLES);
+        variable nib     : std_logic_vector(3 downto 0);
+    begin
+        padded(slv'length - 1 downto 0) := slv;
+        for i in NIBBLES - 1 downto 0 loop
+            nib := padded(i * 4 + 3 downto i * 4);
+            case nib is
+                when "0000" => result(NIBBLES - i) := '0';
+                when "0001" => result(NIBBLES - i) := '1';
+                when "0010" => result(NIBBLES - i) := '2';
+                when "0011" => result(NIBBLES - i) := '3';
+                when "0100" => result(NIBBLES - i) := '4';
+                when "0101" => result(NIBBLES - i) := '5';
+                when "0110" => result(NIBBLES - i) := '6';
+                when "0111" => result(NIBBLES - i) := '7';
+                when "1000" => result(NIBBLES - i) := '8';
+                when "1001" => result(NIBBLES - i) := '9';
+                when "1010" => result(NIBBLES - i) := 'A';
+                when "1011" => result(NIBBLES - i) := 'B';
+                when "1100" => result(NIBBLES - i) := 'C';
+                when "1101" => result(NIBBLES - i) := 'D';
+                when "1110" => result(NIBBLES - i) := 'E';
+                when "1111" => result(NIBBLES - i) := 'F';
+                when others => result(NIBBLES - i) := 'X';
+            end case;
+        end loop;
+        return result;
+    end function;
+
+    -- -------------------------------------------------------------------------
     -- Procedimento de verificação
     -- -------------------------------------------------------------------------
     procedure check_sample(
@@ -107,15 +143,15 @@ architecture bench of tb_i2s_loopback is
         if rx_left = expected_l and rx_right = expected_r then
             pass_cnt := pass_cnt + 1;
             report "[PASS] " & test_name &
-                   " L=0x" & to_hstring(rx_left) &
-                   " R=0x" & to_hstring(rx_right);
+                   " L=0x" & slv_to_hex(rx_left) &
+                   " R=0x" & slv_to_hex(rx_right);
         else
             fail_cnt := fail_cnt + 1;
             report "[FAIL] " & test_name &
-                   " | esperado L=0x" & to_hstring(expected_l) &
-                   " R=0x" & to_hstring(expected_r) &
-                   " | recebido L=0x" & to_hstring(rx_left) &
-                   " R=0x" & to_hstring(rx_right) severity error;
+                   " | esperado L=0x" & slv_to_hex(expected_l) &
+                   " R=0x" & slv_to_hex(expected_r) &
+                   " | recebido L=0x" & slv_to_hex(rx_left) &
+                   " R=0x" & slv_to_hex(rx_right) severity error;
         end if;
     end procedure;
 
