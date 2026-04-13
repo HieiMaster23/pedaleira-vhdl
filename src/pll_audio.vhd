@@ -43,7 +43,6 @@ architecture rtl of pll_audio is
             port_activeclock        : string;
             port_areset             : string;
             port_clkbad0            : string;
-            port_clkena0            : string;
             port_clkloss            : string;
             port_clkswitch          : string;
             port_configupdate       : string;
